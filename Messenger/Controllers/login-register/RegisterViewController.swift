@@ -79,6 +79,7 @@ class RegisterViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(registerButton)
+        scrollView.addSubview(registerButton)
     }
     
     override func viewDidLayoutSubviews() {

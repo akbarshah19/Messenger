@@ -115,7 +115,7 @@ extension RegisterViewController: UITextFieldDelegate {
         if textField == emailField {
             passwordField.becomeFirstResponder()
         } else if textField == passwordField {
-            didTapLogin()
+            didTapRegister()
         }
         return true
     }

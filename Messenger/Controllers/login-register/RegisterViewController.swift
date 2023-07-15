@@ -53,6 +53,36 @@ class RegisterViewController: UIViewController {
         return field
     }()
     
+    private let firstNameField: UITextField = {
+        let field = UITextField()
+        field.autocorrectionType = .no
+        field.autocapitalizationType = .none
+        field.returnKeyType = .continue
+        field.layer.cornerRadius = 12
+        field.layer.borderWidth = 1
+        field.layer.borderColor = UIColor.lightGray.cgColor
+        field.placeholder = "First name"
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 0))
+        field.leftViewMode = .always
+        field.backgroundColor = .secondarySystemBackground
+        return field
+    }()
+    
+    private let lastNameField: UITextField = {
+        let field = UITextField()
+        field.autocorrectionType = .no
+        field.autocapitalizationType = .none
+        field.returnKeyType = .continue
+        field.layer.cornerRadius = 12
+        field.layer.borderWidth = 1
+        field.layer.borderColor = UIColor.lightGray.cgColor
+        field.placeholder = "Last name"
+        field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 0))
+        field.leftViewMode = .always
+        field.backgroundColor = .secondarySystemBackground
+        return field
+    }()
+    
     private let registerButton: UIButton = {
         let button = UIButton()
         button.setTitle("Register", for: .normal)
@@ -76,6 +106,8 @@ class RegisterViewController: UIViewController {
     private func addSubviews() {
         view.addSubview(scrollView)
         scrollView.addSubview(logo)
+        scrollView.addSubview(firstNameField)
+        scrollView.addSubview(lastNameField)
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(registerButton)
@@ -87,7 +119,9 @@ class RegisterViewController: UIViewController {
         scrollView.frame = view.bounds
         let size = scrollView.width/4
         logo.frame = CGRect(x: (scrollView.width - size)/2, y: 20, width: size, height: size)
-        emailField.frame = CGRect(x: 15, y: logo.bottom + 40, width: scrollView.width - 30, height: 52)
+        firstNameField.frame = CGRect(x: 15, y: logo.bottom + 40, width: scrollView.width - 30, height: 52)
+        lastNameField.frame = CGRect(x: 15, y: firstNameField.bottom + 40, width: scrollView.width - 30, height: 52)
+        emailField.frame = CGRect(x: 15, y: lastNameField.bottom + 40, width: scrollView.width - 30, height: 52)
         passwordField.frame = CGRect(x: 15, y: emailField.bottom + 10, width: scrollView.width - 30, height: 52)
         registerButton.frame = CGRect(x: 15, y: passwordField.bottom + 10, width: scrollView.width - 30, height: 52)
     }
@@ -96,15 +130,17 @@ class RegisterViewController: UIViewController {
         emailField.resignFirstResponder()
         passwordField.resignFirstResponder()
         
-        guard let email = emailField.text, !email.isEmpty,
+        guard let firstName = firstNameField.text, !firstName.isEmpty,
+              let lastName = lastNameField.text, !lastName.isEmpty,
+              let email = emailField.text, !email.isEmpty,
               let password = passwordField.text, !password.isEmpty, password.count >= 6 else {
-            alertLoginUserError()
+            alertRegisterUserError()
             return
         }
     }
     
-    func alertLoginUserError() {
-        let alert = UIAlertController(title: "Empty email or password, check and try again.", message: "Password should be at least 6 chars.", preferredStyle: .alert)
+    func alertRegisterUserError() {
+        let alert = UIAlertController(title: "Fill all the fields and try again.", message: "Password should be at least 6 chars.", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Got it!", style: .cancel))
         present(alert, animated: true)
     }

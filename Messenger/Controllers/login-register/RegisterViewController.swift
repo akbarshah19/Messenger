@@ -144,6 +144,12 @@ class RegisterViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Got it!", style: .cancel))
         present(alert, animated: true)
     }
+    
+    func alertRegisterUserError2() {
+        let alert = UIAlertController(title: "Fill all the fields and try again.", message: "Password should be at least 6 chars.", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Got it!", style: .cancel))
+        present(alert, animated: true)
+    }
 }
 
 extension RegisterViewController: UITextFieldDelegate {

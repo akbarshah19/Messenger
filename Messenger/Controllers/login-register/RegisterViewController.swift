@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class RegisterViewController: UIViewController {
 
@@ -129,8 +130,8 @@ class RegisterViewController: UIViewController {
         imageView.frame = CGRect(x: (scrollView.width - size)/2, y: 20, width: size, height: size)
         imageView.layer.cornerRadius = size/2
         firstNameField.frame = CGRect(x: 15, y: imageView.bottom + 40, width: scrollView.width - 30, height: 52)
-        lastNameField.frame = CGRect(x: 15, y: firstNameField.bottom + 40, width: scrollView.width - 30, height: 52)
-        emailField.frame = CGRect(x: 15, y: lastNameField.bottom + 40, width: scrollView.width - 30, height: 52)
+        lastNameField.frame = CGRect(x: 15, y: firstNameField.bottom + 10, width: scrollView.width - 30, height: 52)
+        emailField.frame = CGRect(x: 15, y: lastNameField.bottom + 10, width: scrollView.width - 30, height: 52)
         passwordField.frame = CGRect(x: 15, y: emailField.bottom + 10, width: scrollView.width - 30, height: 52)
         registerButton.frame = CGRect(x: 15, y: passwordField.bottom + 10, width: scrollView.width - 30, height: 52)
     }
@@ -149,6 +150,16 @@ class RegisterViewController: UIViewController {
               let password = passwordField.text, !password.isEmpty, password.count >= 6 else {
             alertRegisterUserError()
             return
+        }
+        
+        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+            guard let result = authResult,
+                error == nil else {
+                print("Error creating user.")
+                return
+            }
+            
+            let user = result.user
         }
     }
     
@@ -200,6 +211,7 @@ extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationC
         vc.sourceType = .photoLibrary
         vc.allowsEditing = true
         vc.delegate = self
+        present(vc, animated: true)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {

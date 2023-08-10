@@ -18,7 +18,7 @@ class RegisterViewController: UIViewController {
     
     private let imageView: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(systemName: "person")
+        image.image = UIImage(systemName: "person.circle")
         image.contentMode = .scaleAspectFit
         image.layer.masksToBounds = true
         image.layer.borderWidth = 1
@@ -152,19 +152,34 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
-            guard let result = authResult,
-                error == nil else {
-                print("Error creating user.")
+        DatabaseManager.shared.userExists(with: email) { [weak self] exists in
+            guard let strongSelf = self else {
                 return
             }
             
-            let user = result.user
+            guard !exists else {
+                strongSelf.alertRegisterUserError(message: "User already exists.")
+                return
+            }
+            
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                guard let result = authResult,
+                    error == nil else {
+                    print("Error creating user.")
+                    return
+                }
+                DatabaseManager.shared.insertUser(with: MessengerUser(firstName: firstName, lastName: lastName, email: email))
+                strongSelf.navigationController?.dismiss(animated: true)
+            }
         }
     }
     
-    func alertRegisterUserError() {
-        let alert = UIAlertController(title: "Fill all the fields and try again.", message: "Password should be at least 6 chars.", preferredStyle: .alert)
+    func alertRegisterUserError(message: String = "Fill all the fields and try again. Password should be at least 6 chars.") {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Got it!", style: .cancel))
         present(alert, animated: true)
     }

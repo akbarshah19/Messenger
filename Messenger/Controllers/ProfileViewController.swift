@@ -63,7 +63,7 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
                 print("Failed to log out.")
             }
         }))
-                                      
+        //alert
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         present(alert, animated: true)
     }

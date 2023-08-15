@@ -7,6 +7,7 @@
 
 import UIKit
 import FirebaseAuth
+import FBSDKLoginKit
 
 class LoginViewController: UIViewController {
     
@@ -64,6 +65,14 @@ class LoginViewController: UIViewController {
         return button
     }()
     
+    private let facebookLoginButton: FBLoginButton = {
+        let button = FBLoginButton()
+        button.permissions = ["public_profile", "email"]
+        button.layer.cornerRadius = 12
+        button.layer.masksToBounds = true
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Log in"
@@ -73,6 +82,7 @@ class LoginViewController: UIViewController {
         loginButton.addTarget(self, action: #selector(didTapLogin), for: .touchUpInside)
         emailField.delegate = self
         passwordField.delegate = self
+        facebookLoginButton.delegate = self
     }
     
     private func addSubviews() {
@@ -81,6 +91,7 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
+        scrollView.addSubview(facebookLoginButton)
     }
     
     override func viewDidLayoutSubviews() {
@@ -91,6 +102,7 @@ class LoginViewController: UIViewController {
         emailField.frame = CGRect(x: 15, y: logo.bottom + 40, width: scrollView.width - 30, height: 52)
         passwordField.frame = CGRect(x: 15, y: emailField.bottom + 10, width: scrollView.width - 30, height: 52)
         loginButton.frame = CGRect(x: 15, y: passwordField.bottom + 10, width: scrollView.width - 30, height: 52)
+        facebookLoginButton.frame = CGRect(x: 15, y: loginButton.bottom + 10, width: scrollView.width - 30, height: 52)
     }
     
     @objc private func didTapLogin() {
@@ -139,5 +151,56 @@ extension LoginViewController: UITextFieldDelegate {
             didTapLogin()
         }
         return true
+    }
+}
+
+extension LoginViewController: LoginButtonDelegate {
+    func loginButtonDidLogOut(_ loginButton: FBSDKLoginKit.FBLoginButton) {
+        
+    }
+    
+    func loginButton(_ loginButton: FBSDKLoginKit.FBLoginButton, didCompleteWith result: FBSDKLoginKit.LoginManagerLoginResult?, error: Error?) {
+        guard let token = result?.token?.tokenString else {
+            print("User failed to log in with facebook")
+            return
+        }
+        let facebookRequest = FBSDKLoginKit.GraphRequest(graphPath: "me", parameters: ["fields": "email, name"], tokenString: token, version: nil, httpMethod: .get)
+        facebookRequest.start() { _, result, error in
+            guard let result = result as? [String: Any], error == nil else {
+                print("Failed to make facbook graph request")
+                return
+            }
+            guard let userName = result["name"] as? String,
+                    let email = result["email"] as? String else {
+                print("Failed to get email and name from fb result")
+                return
+            }
+            let nameCompnents = userName.components(separatedBy: " ")
+            guard nameCompnents.count == 2 else {
+                return
+            }
+            let firstName = nameCompnents[0]
+            let secondName = nameCompnents[1]
+            
+            DatabaseManager.shared.userExists(with: email) { exists in
+                if !exists {
+                    DatabaseManager.shared.insertUser(with: MessengerUser(firstName: firstName, lastName: secondName, email: email))
+                }
+            }
+            
+            let credential = FacebookAuthProvider.credential(withAccessToken: token)
+            FirebaseAuth.Auth.auth().signIn(with: credential) { [weak self] authResult, error in
+                guard let strongSelf = self else {
+                    return
+                }
+                
+                guard authResult != nil, error == nil else {
+                    print("Facebook credential login failed, MFA may be needed")
+                    return
+                }
+                strongSelf.navigationController?.dismiss(animated: true)
+                print("Successfully logged user in")
+            }
+        }
     }
 }

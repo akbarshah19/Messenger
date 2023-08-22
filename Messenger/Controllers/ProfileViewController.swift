@@ -42,7 +42,6 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
         cell.textLabel?.text = data[indexPath.row]
         cell.textLabel?.textAlignment = .center
         cell.textLabel?.textColor = .red
-//        cell.textLabel?.textColor = .white
         return cell
     }
     
